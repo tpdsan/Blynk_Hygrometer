@@ -30,10 +30,20 @@ DHT dht(DHTPIN, DHTTYPE);
 BlynkTimer timer;
 int h = 0; // Global Humidity variable
 int t = 0; // Global Temperature Variable
+int sliderValue = 0; // Global slider value, currently 0,1,2
 
-// This function sends Arduino's up time every second to Virtual Pin (5).
-// In the app, Widget's reading frequency should be set to PUSH. This means
-// that you define how often to send data to Blynk App.
+// This function will be called every time Slider Widget
+// in Blynk app writes values to the Virtual Pin 1
+BLYNK_WRITE(V7)
+{
+  sliderValue = param.asInt(); // assigning incoming value from pin V1 to a variable
+  Serial.print("V7 Slider value is: ");
+  Serial.println(sliderValue);
+}
+
+// This function sends humidty and temperature data to Virtual Pin (5) and 
+// (6). In the app, Widget's reading frequency should be set to PUSH. This 
+// means that you define how often to send data to Blynk App.
 void sendSensor()
 {
   h = dht.readHumidity();
@@ -50,34 +60,52 @@ void sendSensor()
   Serial.println("Humidity: " + String(h) + "% Temperature: " + String(t));
 }
 
-void drawLogo()
+void drawDisplay()
 {
-  if ( u8g2.getDisplayHeight() < 59 )
-  u8g2.setFontMode(1);  // Transparent
-  u8g2.setDrawColor(1);
-
-  u8g2.setFontDirection(0);
-  u8g2.setFont(u8g2_font_timR14_tf);
-  u8g2.drawStr(10, 15, "Ohlone");
-  u8g2.setFont(u8g2_font_timB24_tr);
-  u8g2.drawStr(0, 40, "C");
-  u8g2.setFont(u8g2_font_timB18_tr);
-  u8g2.drawStr(24, 35, "IGAR");
-  u8g2.setFont(u8g2_font_timB10_tr);
-  u8g2.drawStr(25, 47, "Lounge");
-  u8g2.setFont(u8g2_font_timR14_tr);
-  u8g2.setCursor(95, 15);
-  u8g2.print(h);
-  u8g2.print("%");
-  u8g2.setCursor(95, 30);
-  u8g2.print(t);
-  u8g2.print("F");
-}
-
-void drawURL(void)
-{
-  u8g2.setFont(u8g2_font_5x7_mr);
-  u8g2.drawStr(0,64,"www.ohlonecigarlounge.com");
+     u8g2.setFontMode(1);  // Transparent
+     u8g2.setDrawColor(1);
+     u8g2.setFontDirection(0);
+     
+  if ( sliderValue < 1 ) {
+     u8g2.setFont(u8g2_font_timR14_tf);
+     u8g2.drawStr(10, 15, "Ohlone");
+     u8g2.setFont(u8g2_font_timB24_tr);
+     u8g2.drawStr(0, 40, "C");
+     u8g2.setFont(u8g2_font_timB18_tr);
+     u8g2.drawStr(24, 35, "IGAR");
+     u8g2.setFont(u8g2_font_timB10_tr);
+     u8g2.drawStr(25, 47, "Lounge");
+     u8g2.setFont(u8g2_font_timR14_tr);
+     u8g2.setCursor(95, 15);
+     u8g2.print(h);
+     u8g2.print("%");
+     u8g2.setCursor(95, 30);
+     u8g2.print(t);
+     u8g2.print("F");
+     u8g2.setFont(u8g2_font_5x7_mr);
+     u8g2.drawStr(0,64,"www.ohlonecigarlounge.com");
+  }
+  else if ( sliderValue == 1 ) {
+     u8g2.setFont(u8g2_font_timB18_tr);
+     u8g2.setCursor(20, 45);
+     u8g2.print(h);
+     u8g2.print("%   ");
+     u8g2.print(t);
+     u8g2.print("F ");
+  }
+    else if ( sliderValue == 2 ) {
+     u8g2.setFont(u8g2_font_timB18_tr);
+     u8g2.setCursor(20, 45);
+     u8g2.print("Ronan");
+  }
+    else if ( sliderValue == 3 ) {
+     u8g2.setFont(u8g2_font_timB18_tr);
+     u8g2.setCursor(20, 45);
+     u8g2.print("Riley");
+  }
+    else {
+     // Do nothing, blank screen
+  }
 }
 
 void setup()
@@ -107,7 +135,6 @@ void loop()
 
   u8g2.firstPage();
   do {
-    drawLogo();
-    drawURL();
+    drawDisplay();
   } while ( u8g2.nextPage() );
 }
